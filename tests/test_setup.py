@@ -78,3 +78,21 @@ def test_setup_get_redirects_to_login_when_already_configured(tmp_path, monkeypa
         response = client.get('/setup', follow_redirects=False)
         assert response.status_code == 302
         assert '/login' in response.headers['Location']
+
+
+def test_frozen_mode_uses_data_dir_for_db_and_uploads(tmp_path, monkeypatch):
+    import importlib
+    import app as app_module
+    importlib.reload(app_module)
+
+    app_module.FROZEN = True
+    data_dir = str(tmp_path / 'DebriefData')
+    monkeypatch.setattr(app_module.cfg, 'get_data_dir', lambda: data_dir)
+
+    # Re-run the module-level path setup that normally runs at import time
+    app_module.configure_storage_paths()
+
+    import os
+    assert app_module.UPLOAD_DIR.startswith(data_dir)
+    import db
+    assert db.DB_PATH.startswith(data_dir)

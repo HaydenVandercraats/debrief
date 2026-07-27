@@ -28,11 +28,24 @@ if DEBRIEF_TIER == 'pro':
     if not os.environ.get('ANTHROPIC_API_KEY'):
         raise RuntimeError('DEBRIEF_TIER=pro requires ANTHROPIC_API_KEY to be set.')
 
-db.init_db()
+UPLOAD_DIR = None
 
-UPLOAD_DIR = os.environ.get('DEBRIEF_UPLOAD_DIR', 'uploads')
-UPLOAD_DIR = os.path.abspath(UPLOAD_DIR)
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def configure_storage_paths():
+    global UPLOAD_DIR
+    if FROZEN:
+        data_dir = cfg.get_data_dir()
+        db.DB_PATH = os.path.join(data_dir, 'debrief.db')
+        UPLOAD_DIR = os.path.join(data_dir, 'uploads')
+    else:
+        UPLOAD_DIR = os.environ.get('DEBRIEF_UPLOAD_DIR', 'uploads')
+    UPLOAD_DIR = os.path.abspath(UPLOAD_DIR)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+configure_storage_paths()
+
+db.init_db()
 
 
 def setup_required():
