@@ -8,7 +8,7 @@
   <h2>Past calls</h2>
   <ul>
     {% for call in calls %}
-      <li>{{ call.created_at }} — {{ call.company or 'Unknown company' }} — {{ call.status }}</li>
+      <li><a href="{{ url_for('call_detail', call_id=call.id) }}">{{ call.created_at }} — {{ call.company or 'Unknown company' }} — {{ call.status }}</a></li>
     {% else %}
       <li>No calls yet.</li>
     {% endfor %}

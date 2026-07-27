@@ -1,9 +1,11 @@
 import os
 import secrets
+import uuid
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, abort
 
 import db
+import pipeline
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
@@ -18,6 +20,9 @@ if DEBRIEF_TIER == 'pro':
         raise RuntimeError('DEBRIEF_TIER=pro requires ANTHROPIC_API_KEY to be set.')
 
 db.init_db()
+
+UPLOAD_DIR = 'uploads'
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 def login_required(view):
@@ -55,6 +60,40 @@ def logout():
 def index():
     calls = db.list_calls()
     return render_template('index.html', calls=calls, tier=DEBRIEF_TIER)
+
+
+@app.route('/calls', methods=['POST'])
+@login_required
+def upload_call():
+    company = request.form.get('company', '').strip() or None
+    contact_name = request.form.get('contact_name', '').strip() or None
+    keep_audio = request.form.get('keep_audio') == 'on'
+    audio_file = request.files['audio']
+
+    filename = f'{uuid.uuid4().hex}.webm'
+    audio_path = os.path.join(UPLOAD_DIR, filename)
+    audio_file.save(audio_path)
+
+    call_id = db.create_call(
+        company=company,
+        contact_name=contact_name,
+        tier_used=DEBRIEF_TIER,
+        audio_kept=keep_audio,
+        audio_path=audio_path,
+    )
+
+    pipeline.run_pipeline(call_id, audio_path, DEBRIEF_TIER, keep_audio)
+
+    return redirect(url_for('call_detail', call_id=call_id))
+
+
+@app.route('/calls/<int:call_id>')
+@login_required
+def call_detail(call_id):
+    record = db.get_call(call_id)
+    if record is None:
+        abort(404)
+    return render_template('call_detail.html', call=record)
 
 
 if __name__ == '__main__':
