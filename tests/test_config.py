@@ -46,3 +46,30 @@ def test_get_data_dir_creates_directory(tmp_path, monkeypatch):
     result = config.get_data_dir()
     assert result == target
     assert os.path.isdir(target)
+
+
+def test_load_config_returns_none_for_non_dict_json_null(tmp_path):
+    data_dir = str(tmp_path)
+    config_path = os.path.join(data_dir, 'config.json')
+    with open(config_path, 'w') as f:
+        json.dump(None, f)
+
+    assert config.load_config(data_dir=data_dir) is None
+
+
+def test_load_config_returns_none_for_non_dict_json_int(tmp_path):
+    data_dir = str(tmp_path)
+    config_path = os.path.join(data_dir, 'config.json')
+    with open(config_path, 'w') as f:
+        json.dump(42, f)
+
+    assert config.load_config(data_dir=data_dir) is None
+
+
+def test_load_config_returns_none_for_non_dict_json_list(tmp_path):
+    data_dir = str(tmp_path)
+    config_path = os.path.join(data_dir, 'config.json')
+    with open(config_path, 'w') as f:
+        json.dump([1, 2, 3], f)
+
+    assert config.load_config(data_dir=data_dir) is None

@@ -25,7 +25,7 @@ def load_config(data_dir=None):
             data = json.load(f)
     except (json.JSONDecodeError, OSError):
         return None
-    if 'password_hash' not in data or 'secret_key' not in data:
+    if not isinstance(data, dict) or 'password_hash' not in data or 'secret_key' not in data:
         return None
     return data
 
