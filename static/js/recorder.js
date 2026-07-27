@@ -8,16 +8,28 @@
   let recordedChunks = [];
   let audioContext = null;
   let activeStreams = [];
+  let analyserNode = null;
+  let peakAmplitude = 0;
+  let samplingInterval = null;
 
   function stopAllTracks() {
     activeStreams.forEach((stream) => stream.getTracks().forEach((track) => track.stop()));
     activeStreams = [];
   }
 
+  function stopSampling() {
+    if (samplingInterval) {
+      clearInterval(samplingInterval);
+      samplingInterval = null;
+    }
+  }
+
   startBtn.addEventListener('click', async () => {
     try {
       statusEl.textContent = 'Requesting screen/tab audio share...';
       const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      activeStreams = [displayStream];
+
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       activeStreams = [displayStream, micStream];
 
@@ -29,12 +41,28 @@
       }
       audioContext.createMediaStreamSource(micStream).connect(destination);
 
+      analyserNode = audioContext.createAnalyser();
+      destination.connect(analyserNode);
+
       recordedChunks = [];
+      peakAmplitude = 0;
       mediaRecorder = new MediaRecorder(destination.stream, { mimeType: 'audio/webm;codecs=opus' });
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) recordedChunks.push(event.data);
       };
       mediaRecorder.start();
+
+      // Start sampling analyser for silence detection
+      const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+      samplingInterval = setInterval(() => {
+        analyserNode.getByteTimeDomainData(dataArray);
+        for (let i = 0; i < dataArray.length; i++) {
+          const sample = Math.abs(dataArray[i] - 128);
+          if (sample > peakAmplitude) {
+            peakAmplitude = sample;
+          }
+        }
+      }, 500);
 
       statusEl.textContent = 'Recording...';
       startBtn.disabled = true;
@@ -48,12 +76,13 @@
   stopBtn.addEventListener('click', () => {
     if (!mediaRecorder) return;
     mediaRecorder.onstop = () => {
+      stopSampling();
       stopAllTracks();
       if (audioContext) audioContext.close();
 
       const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-      if (blob.size < 1000) {
-        statusEl.textContent = 'Recording appears empty (no audio captured) — check your share/mic selection and try again.';
+      if (blob.size < 1000 || peakAmplitude < 10) {
+        statusEl.textContent = 'Recording appears silent — check your share/mic selection and try again.';
         startBtn.disabled = false;
         stopBtn.disabled = true;
         return;
