@@ -85,6 +85,12 @@ body {
   color: var(--muted);
 }
 
+.hero-note-small {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
 .features { padding: 64px 0; background: var(--card-bg); }
 
 .feature-grid {

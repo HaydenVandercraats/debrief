@@ -171,4 +171,4 @@ def retry_call(call_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=not FROZEN, use_reloader=not FROZEN)

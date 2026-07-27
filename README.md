@@ -56,6 +56,24 @@ password (instead of the `DEBRIEF_PASSWORD` env var used in the source/dev
 workflow above). The database and uploaded audio are stored in
 `%LOCALAPPDATA%\Debrief\` rather than the current working directory.
 
+Once running, open `http://localhost:5000` in your browser (the console
+window also prints this URL on startup).
+
+This release is Windows-only — there is no macOS/Linux build.
+
+The first time you actually transcribe a call, `debrief.exe` downloads the
+local Whisper speech-to-text model (~150MB). This happens once and requires
+an internet connection; the app will appear to hang during this download,
+so expect the first recording to take noticeably longer than subsequent
+ones.
+
+`debrief.exe` is unsigned, so Windows SmartScreen will show an "Unknown
+publisher" warning on first run — click "More info" → "Run anyway" to
+continue.
+
+There is no installer or uninstaller in this version, by design. To remove
+the app, delete `debrief.exe` and the `%LOCALAPPDATA%\Debrief\` folder.
+
 ## Landing Page & Distribution
 
 - The marketing/download site lives in `site/` (plain HTML/CSS, no build
