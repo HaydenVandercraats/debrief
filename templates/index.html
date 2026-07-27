@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head><title>Debrief</title></head>
+<body>
+  <h1>Debrief</h1>
+  <p>Tier: {{ tier }}</p>
+  <a href="{{ url_for('logout') }}">Log out</a>
+  <h2>Past calls</h2>
+  <ul>
+    {% for call in calls %}
+      <li>{{ call.created_at }} — {{ call.company or 'Unknown company' }} — {{ call.status }}</li>
+    {% else %}
+      <li>No calls yet.</li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
