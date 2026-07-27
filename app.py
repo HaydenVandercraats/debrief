@@ -12,6 +12,14 @@ import pipeline
 
 FROZEN = getattr(sys, 'frozen', False)
 
+if FROZEN:
+    # A packaged exe's stdout isn't always a real interactive console (or even
+    # when it is, PyInstaller's bootloader can leave it block-buffered), so
+    # print() output can sit invisible in a buffer until the process exits.
+    # Force line buffering so the user actually sees startup messages.
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+
 app = Flask(__name__)
 if FROZEN:
     _existing_config = cfg.load_config()
@@ -171,4 +179,17 @@ def retry_call(call_id):
 
 
 if __name__ == '__main__':
+    if FROZEN:
+        import threading
+        import time
+        import webbrowser
+
+        def _open_browser():
+            time.sleep(1.5)
+            webbrowser.open('http://127.0.0.1:5000')
+
+        print('Starting Debrief... your browser will open automatically.', flush=True)
+        print('If it does not, visit http://127.0.0.1:5000', flush=True)
+        threading.Thread(target=_open_browser, daemon=True).start()
+
     app.run(debug=not FROZEN, use_reloader=not FROZEN)
