@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head><title>Debrief — Setup</title></head>
+<body>
+  <h1>Welcome to Debrief</h1>
+  <p>Set a password to protect your local Debrief instance. You'll use this password to log in every time you launch the app.</p>
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+  <form method="post">
+    <input type="password" name="password" placeholder="Choose a password" required>
+    <button type="submit">Set Password &amp; Continue</button>
+  </form>
+</body>
+</html>
