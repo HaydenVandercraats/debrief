@@ -45,6 +45,26 @@ Audio is discarded immediately after transcription by default. Check "Keep
 audio recording" before starting to retain the file (enables retry on
 failure and re-listening).
 
+## Packaged App (no Python required)
+
+A portable Windows executable is built via PyInstaller — see `BUILDING.md`
+for build instructions and the required manual verification steps before
+shipping a build.
+
+On first launch, `debrief.exe` shows a one-time setup screen to choose a
+password (instead of the `DEBRIEF_PASSWORD` env var used in the source/dev
+workflow above). The database and uploaded audio are stored in
+`%LOCALAPPDATA%\Debrief\` rather than the current working directory.
+
+## Landing Page & Distribution
+
+- The marketing/download site lives in `site/` (plain HTML/CSS, no build
+  step) and deploys to Render as a static site.
+- To publish a new build: build `debrief.exe` (see `BUILDING.md`), push this
+  repo to GitHub, cut a GitHub Release, and attach the exe as a release
+  asset — the site's Download button links to
+  `https://github.com/HaydenVandercraats/debrief/releases/latest`.
+
 ## Running Tests
 
 ```bash
