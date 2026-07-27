@@ -96,5 +96,18 @@ def call_detail(call_id):
     return render_template('call_detail.html', call=record)
 
 
+@app.route('/calls/<int:call_id>/retry', methods=['POST'])
+@login_required
+def retry_call(call_id):
+    record = db.get_call(call_id)
+    if record is None:
+        abort(404)
+    if not record['audio_kept'] or not record['audio_path'] or not os.path.exists(record['audio_path']):
+        return 'Audio was not retained for this call — please re-record it.', 400
+
+    pipeline.run_pipeline(call_id, record['audio_path'], record['tier_used'], keep_audio=True)
+    return redirect(url_for('call_detail', call_id=call_id))
+
+
 if __name__ == '__main__':
     app.run(debug=True)
