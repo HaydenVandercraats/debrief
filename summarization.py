@@ -19,8 +19,11 @@ def summarize_free(transcript):
 
 def summarize_pro(transcript, client=None):
     if client is None:
+        api_key = os.environ.get('ANTHROPIC_API_KEY')
+        if not api_key:
+            raise RuntimeError('ANTHROPIC_API_KEY is not set.')
         from anthropic import Anthropic
-        client = Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
+        client = Anthropic(api_key=api_key)
 
     message = client.messages.create(
         model='claude-sonnet-4-5',

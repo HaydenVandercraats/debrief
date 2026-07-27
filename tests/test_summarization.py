@@ -50,3 +50,11 @@ def test_summarize_dispatches_by_tier(monkeypatch):
 
     assert summarization.summarize('text', 'free') == {'free': True}
     assert summarization.summarize('text', 'pro') == {'pro': True}
+
+
+def test_summarize_pro_raises_on_missing_api_key(monkeypatch):
+    monkeypatch.delenv('ANTHROPIC_API_KEY', raising=False)
+
+    import pytest
+    with pytest.raises(RuntimeError, match='ANTHROPIC_API_KEY is not set'):
+        summarization.summarize_pro('transcript text')
