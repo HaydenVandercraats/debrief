@@ -5,6 +5,18 @@
   <h1>Debrief</h1>
   <p>Tier: {{ tier }}</p>
   <a href="{{ url_for('logout') }}">Log out</a>
+  <h2>New Call</h2>
+  <form id="call-form" method="post" action="{{ url_for('upload_call') }}" enctype="multipart/form-data">
+    <input type="text" name="company" placeholder="Company">
+    <input type="text" name="contact_name" placeholder="Contact name">
+    <label><input type="checkbox" name="keep_audio"> Keep audio recording</label>
+    <input type="hidden" name="audio" id="audio-field">
+    <br>
+    <button type="button" id="start-btn">Start Recording</button>
+    <button type="button" id="stop-btn" disabled>Stop &amp; Save</button>
+    <p id="recorder-status"></p>
+  </form>
+  <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
   <h2>Past calls</h2>
   <ul>
     {% for call in calls %}
