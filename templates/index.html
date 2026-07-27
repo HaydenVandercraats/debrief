@@ -6,11 +6,10 @@
   <p>Tier: {{ tier }}</p>
   <a href="{{ url_for('logout') }}">Log out</a>
   <h2>New Call</h2>
-  <form id="call-form" method="post" action="{{ url_for('upload_call') }}" enctype="multipart/form-data">
+  <form id="call-form" method="post" action="{{ url_for('upload_call') }}" enctype="multipart/form-data" onsubmit="return false;">
     <input type="text" name="company" placeholder="Company">
     <input type="text" name="contact_name" placeholder="Contact name">
     <label><input type="checkbox" name="keep_audio"> Keep audio recording</label>
-    <input type="hidden" name="audio" id="audio-field">
     <br>
     <button type="button" id="start-btn">Start Recording</button>
     <button type="button" id="stop-btn" disabled>Stop &amp; Save</button>

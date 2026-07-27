@@ -72,6 +72,35 @@ def test_retry_reruns_pipeline_when_audio_kept(client, monkeypatch, tmp_path):
     assert calls_made == [(call_id, str(audio_path), 'free', True)]
 
 
+def test_free_tier_pipeline_runs_end_to_end(client, monkeypatch):
+    client.post('/login', data={'password': 'test-password'})
+
+    import app as app_module
+
+    canned_transcript = (
+        "We have about fifty grand set aside for this. "
+        "We'd need this live before the end of Q3."
+    )
+    monkeypatch.setattr(
+        app_module.pipeline.transcription, 'transcribe',
+        lambda audio_path, tier, **k: canned_transcript,
+    )
+
+    data = {
+        'company': 'Acme Co',
+        'contact_name': 'Jordan Lee',
+        'keep_audio': '',
+        'audio': (io.BytesIO(b'fake-audio-bytes'), 'call.webm'),
+    }
+    upload_response = client.post('/calls', data=data, content_type='multipart/form-data')
+    call_url = upload_response.headers['Location']
+
+    detail_response = client.get(call_url)
+    assert detail_response.status_code == 200
+    assert b'fifty grand' in detail_response.data
+    assert b'Q3' in detail_response.data
+
+
 def test_retry_returns_400_when_audio_not_kept(client):
     client.post('/login', data={'password': 'test-password'})
 

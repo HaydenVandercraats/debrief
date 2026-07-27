@@ -35,14 +35,16 @@
 
       audioContext = new AudioContext();
       const destination = audioContext.createMediaStreamDestination();
+      const mixBus = audioContext.createGain();
 
       if (displayStream.getAudioTracks().length > 0) {
-        audioContext.createMediaStreamSource(new MediaStream(displayStream.getAudioTracks())).connect(destination);
+        audioContext.createMediaStreamSource(new MediaStream(displayStream.getAudioTracks())).connect(mixBus);
       }
-      audioContext.createMediaStreamSource(micStream).connect(destination);
+      audioContext.createMediaStreamSource(micStream).connect(mixBus);
 
       analyserNode = audioContext.createAnalyser();
-      destination.connect(analyserNode);
+      mixBus.connect(destination);
+      mixBus.connect(analyserNode);
 
       recordedChunks = [];
       peakAmplitude = 0;

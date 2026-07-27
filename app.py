@@ -21,7 +21,8 @@ if DEBRIEF_TIER == 'pro':
 
 db.init_db()
 
-UPLOAD_DIR = 'uploads'
+UPLOAD_DIR = os.environ.get('DEBRIEF_UPLOAD_DIR', 'uploads')
+UPLOAD_DIR = os.path.abspath(UPLOAD_DIR)
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -79,7 +80,7 @@ def upload_call():
         contact_name=contact_name,
         tier_used=DEBRIEF_TIER,
         audio_kept=keep_audio,
-        audio_path=audio_path,
+        audio_path=audio_path if keep_audio else None,
     )
 
     pipeline.run_pipeline(call_id, audio_path, DEBRIEF_TIER, keep_audio)
