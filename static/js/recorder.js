@@ -68,9 +68,11 @@
 
       statusEl.textContent = 'Recording...';
       startBtn.disabled = true;
+      startBtn.classList.add('is-recording');
       stopBtn.disabled = false;
     } catch (err) {
       statusEl.textContent = 'Could not start recording: ' + err.message;
+      startBtn.classList.remove('is-recording');
       stopAllTracks();
     }
   });
@@ -81,6 +83,8 @@
       stopSampling();
       stopAllTracks();
       if (audioContext) audioContext.close();
+
+      startBtn.classList.remove('is-recording');
 
       const blob = new Blob(recordedChunks, { type: 'audio/webm' });
       if (blob.size < 1000 || peakAmplitude < 10) {

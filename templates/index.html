@@ -1,28 +1,77 @@
 <!doctype html>
 <html>
-<head><title>Debrief</title></head>
+<head>
+  <title>Debrief</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
 <body>
-  <h1>Debrief</h1>
-  <p>Tier: {{ tier }}</p>
-  <a href="{{ url_for('logout') }}">Log out</a>
-  <h2>New Call</h2>
-  <form id="call-form" method="post" action="{{ url_for('upload_call') }}" enctype="multipart/form-data" onsubmit="return false;">
-    <input type="text" name="company" placeholder="Company">
-    <input type="text" name="contact_name" placeholder="Contact name">
-    <label><input type="checkbox" name="keep_audio"> Keep audio recording</label>
-    <br>
-    <button type="button" id="start-btn">Start Recording</button>
-    <button type="button" id="stop-btn" disabled>Stop &amp; Save</button>
-    <p id="recorder-status"></p>
-  </form>
-  <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
-  <h2>Past calls</h2>
-  <ul>
-    {% for call in calls %}
-      <li><a href="{{ url_for('call_detail', call_id=call.id) }}">{{ call.created_at }} — {{ call.company or 'Unknown company' }} — {{ call.status }}</a></li>
+  <div class="container">
+    <div class="app-header">
+      <div class="app-logo">Debrief</div>
+      <div class="app-header-right">
+        <span class="tier-badge">{{ tier }}</span>
+        <a href="{{ url_for('logout') }}">Log out</a>
+      </div>
+    </div>
+
+    <h2 class="section-title" style="margin-top: 0;">New Call</h2>
+    <div class="card new-call-card">
+      <div class="record-controls">
+        <button class="record-button" type="button" id="start-btn" title="Start Recording">
+          <span class="mic-glyph"></span>
+        </button>
+        <div class="record-actions">
+          <button class="btn btn-secondary" type="button" id="stop-btn" disabled>Stop &amp; Save</button>
+        </div>
+      </div>
+
+      <form id="call-form" class="new-call-fields" method="post" action="{{ url_for('upload_call') }}" enctype="multipart/form-data" onsubmit="return false;">
+        <div class="field">
+          <label class="field-label" for="company">Company</label>
+          <input class="field-input" type="text" id="company" name="company" placeholder="Company">
+        </div>
+        <div class="field">
+          <label class="field-label" for="contact_name">Contact name</label>
+          <input class="field-input" type="text" id="contact_name" name="contact_name" placeholder="Contact name">
+        </div>
+        <label class="field-checkbox">
+          <input type="checkbox" name="keep_audio"> Keep audio recording
+        </label>
+        <p id="recorder-status"></p>
+      </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+
+    <h2 class="section-title">Recent Calls</h2>
+    {% if calls %}
+      <ul class="call-list">
+        {% for call in calls %}
+          <li>
+            <a class="call-row" href="{{ url_for('call_detail', call_id=call.id) }}">
+              <div class="call-row-main">
+                <span class="call-row-company">{{ call.company or 'Unknown company' }}</span>
+                <span class="call-row-date">{{ call.created_at }}</span>
+              </div>
+              {% if call.status == 'done' %}
+                <span class="status-pill status-pill--done"><span class="pill-icon"></span>Done</span>
+              {% elif call.status == 'failed' %}
+                <span class="status-pill status-pill--failed"><span class="pill-icon"></span>Failed</span>
+              {% elif call.status in ('transcribing', 'summarizing') %}
+                <span class="status-pill status-pill--transcribing"><span class="pill-icon"></span>{{ call.status|capitalize }}</span>
+              {% else %}
+                <span class="status-pill status-pill--idle"><span class="pill-icon"></span>{{ call.status|capitalize }}</span>
+              {% endif %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
     {% else %}
-      <li>No calls yet.</li>
-    {% endfor %}
-  </ul>
+      <div class="card empty-state">
+        <div class="empty-state-icon"></div>
+        <h3>No calls yet</h3>
+        <p>Start your first recording above and it'll show up here.</p>
+      </div>
+    {% endif %}
+  </div>
 </body>
 </html>

@@ -1,35 +1,56 @@
 <!doctype html>
 <html>
-<head><title>Debrief — Call Detail</title></head>
+<head>
+  <title>Debrief — Call Detail</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
 <body>
-  <p><a href="{{ url_for('index') }}">&larr; Back</a></p>
-  <h1>{{ call.company or 'Unknown company' }}</h1>
-  <p>{{ call.created_at }} — status: {{ call.status }}</p>
+  <div class="container">
+    <a class="back-link" href="{{ url_for('index') }}">&larr; Back</a>
 
-  {% if call.status == 'failed' %}
-    <p style="color:red">Error: {{ call.error_message }}</p>
-    {% if call.audio_kept %}
-      <form method="post" action="{{ url_for('retry_call', call_id=call.id) }}">
-        <button type="submit">Retry</button>
-      </form>
-    {% else %}
-      <p>Audio was not retained — please re-record this call.</p>
+    <div class="detail-header">
+      <h1>{{ call.company or 'Unknown company' }}</h1>
+      {% if call.status == 'done' %}
+        <span class="status-pill status-pill--done"><span class="pill-icon"></span>Done</span>
+      {% elif call.status == 'failed' %}
+        <span class="status-pill status-pill--failed"><span class="pill-icon"></span>Failed</span>
+      {% elif call.status in ('transcribing', 'summarizing') %}
+        <span class="status-pill status-pill--transcribing"><span class="pill-icon"></span>{{ call.status|capitalize }}</span>
+      {% else %}
+        <span class="status-pill status-pill--idle"><span class="pill-icon"></span>{{ call.status|capitalize }}</span>
+      {% endif %}
+    </div>
+    <p class="detail-meta">{{ call.created_at }}</p>
+
+    {% if call.status == 'failed' %}
+      <div class="alert-card">
+        <span>Error: {{ call.error_message }}</span>
+        {% if call.audio_kept %}
+          <form method="post" action="{{ url_for('retry_call', call_id=call.id) }}">
+            <button class="btn btn-danger" type="submit">Retry</button>
+          </form>
+        {% else %}
+          <span>Audio was not retained — please re-record this call.</span>
+        {% endif %}
+      </div>
     {% endif %}
-  {% endif %}
 
-  {% if call.summary_json %}
-    <h2>MEDDIC/BANT Summary</h2>
-    <dl>
-      {% for key, value in call.summary_json.items() %}
-        <dt>{{ key }}</dt>
-        <dd>{{ value or '—' }}</dd>
-      {% endfor %}
-    </dl>
-  {% endif %}
+    {% if call.summary_json %}
+      <h2 class="section-title section-title--data" style="margin-top: 0;">MEDDIC/BANT Summary</h2>
+      <div class="meddic-grid">
+        {% for key, value in call.summary_json.items() %}
+          <div class="meddic-card{% if not value %} meddic-card--empty{% endif %}">
+            <div class="meddic-card-label">{{ key|replace('_', ' ') }}</div>
+            <div class="meddic-card-value">{{ value if value else 'Not mentioned' }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
-  {% if call.transcript %}
-    <h2>Transcript</h2>
-    <pre>{{ call.transcript }}</pre>
-  {% endif %}
+    {% if call.transcript %}
+      <h2 class="section-title">Transcript</h2>
+      <pre class="transcript-panel">{{ call.transcript }}</pre>
+    {% endif %}
+  </div>
 </body>
 </html>
