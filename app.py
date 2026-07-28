@@ -13,12 +13,21 @@ import pipeline
 FROZEN = getattr(sys, 'frozen', False)
 
 if FROZEN:
-    # A packaged exe's stdout isn't always a real interactive console (or even
-    # when it is, PyInstaller's bootloader can leave it block-buffered), so
-    # print() output can sit invisible in a buffer until the process exits.
-    # Force line buffering so the user actually sees startup messages.
-    sys.stdout.reconfigure(line_buffering=True)
-    sys.stderr.reconfigure(line_buffering=True)
+    if sys.stdout is None or sys.stderr is None:
+        # A windowed (no-console) build has no attached console, so
+        # sys.stdout/sys.stderr are None rather than a real stream. Any
+        # library code that unconditionally writes to them (e.g. Werkzeug's
+        # own startup banner) would crash with AttributeError on None.
+        # Redirect to a null sink so writes are harmless no-ops instead.
+        devnull = open(os.devnull, 'w')
+        sys.stdout = sys.stdout or devnull
+        sys.stderr = sys.stderr or devnull
+    else:
+        # A packaged console-mode exe's stdout isn't always line-buffered
+        # correctly, so print() output can sit invisible until the process
+        # exits. Force line buffering so startup messages actually show.
+        sys.stdout.reconfigure(line_buffering=True)
+        sys.stderr.reconfigure(line_buffering=True)
 
 app = Flask(__name__)
 if FROZEN:
@@ -182,18 +191,34 @@ if __name__ == '__main__':
     port = int(os.environ.get('DEBRIEF_PORT', '5000'))
 
     if FROZEN:
+        import socket
         import threading
         import time
-        import webbrowser
 
-        url = f'http://127.0.0.1:{port}'
+        import webview
 
-        def _open_browser():
-            time.sleep(1.5)
-            webbrowser.open(url)
+        def _run_flask():
+            app.run(port=port, debug=False, use_reloader=False)
 
-        print('Starting Debrief... your browser will open automatically.', flush=True)
-        print(f'If it does not, visit {url}', flush=True)
-        threading.Thread(target=_open_browser, daemon=True).start()
+        threading.Thread(target=_run_flask, daemon=True).start()
 
-    app.run(port=port, debug=not FROZEN, use_reloader=not FROZEN)
+        # Wait for the Flask thread to actually be accepting connections
+        # before pointing the native window at it, so the window doesn't
+        # briefly show a connection-refused error on launch.
+        for _ in range(50):
+            try:
+                with socket.create_connection(('127.0.0.1', port), timeout=0.2):
+                    break
+            except OSError:
+                time.sleep(0.1)
+
+        webview.create_window(
+            'Debrief',
+            f'http://127.0.0.1:{port}',
+            width=1000,
+            height=800,
+            min_size=(700, 500),
+        )
+        webview.start()
+    else:
+        app.run(port=port, debug=not FROZEN, use_reloader=not FROZEN)

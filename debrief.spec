@@ -5,7 +5,7 @@ datas = [('templates', 'templates'), ('static', 'static')]
 binaries = []
 hiddenimports = []
 
-for pkg in ('faster_whisper', 'ctranslate2', 'onnxruntime', 'tokenizers', 'numpy'):
+for pkg in ('faster_whisper', 'ctranslate2', 'onnxruntime', 'tokenizers', 'numpy', 'webview', 'clr_loader', 'pythonnet'):
     pkg_datas, pkg_binaries, pkg_hiddenimports = collect_all(pkg)
     datas += pkg_datas
     binaries += pkg_binaries
@@ -38,7 +38,7 @@ exe = EXE(
     upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
