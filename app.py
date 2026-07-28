@@ -179,17 +179,21 @@ def retry_call(call_id):
 
 
 if __name__ == '__main__':
+    port = int(os.environ.get('DEBRIEF_PORT', '5000'))
+
     if FROZEN:
         import threading
         import time
         import webbrowser
 
+        url = f'http://127.0.0.1:{port}'
+
         def _open_browser():
             time.sleep(1.5)
-            webbrowser.open('http://127.0.0.1:5000')
+            webbrowser.open(url)
 
         print('Starting Debrief... your browser will open automatically.', flush=True)
-        print('If it does not, visit http://127.0.0.1:5000', flush=True)
+        print(f'If it does not, visit {url}', flush=True)
         threading.Thread(target=_open_browser, daemon=True).start()
 
-    app.run(debug=not FROZEN, use_reloader=not FROZEN)
+    app.run(port=port, debug=not FROZEN, use_reloader=not FROZEN)

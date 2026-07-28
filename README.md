@@ -56,8 +56,12 @@ password (instead of the `DEBRIEF_PASSWORD` env var used in the source/dev
 workflow above). The database and uploaded audio are stored in
 `%LOCALAPPDATA%\Debrief\` rather than the current working directory.
 
-Once running, open `http://localhost:5000` in your browser (the console
-window also prints this URL on startup).
+Once running, `debrief.exe` opens your default browser automatically to
+`http://localhost:5000` (the console window also prints this URL on
+startup, in case auto-open doesn't work in your environment).
+
+If port 5000 is already in use by something else, set `DEBRIEF_PORT` before
+launching to pick a different one (e.g. `set DEBRIEF_PORT=5050 && debrief.exe`).
 
 This release is Windows-only — there is no macOS/Linux build.
 
