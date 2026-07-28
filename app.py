@@ -188,10 +188,25 @@ def retry_call(call_id):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('DEBRIEF_PORT', '5000'))
+    import socket
+
+    env_port = os.environ.get('DEBRIEF_PORT')
+    if env_port:
+        port = int(env_port)
+    elif FROZEN:
+        # Don't default to a fixed port for the packaged app - something
+        # else on the user's machine may already be using it (a real,
+        # observed failure mode: the app window loaded a completely
+        # different program's page because port 5000 was already taken).
+        # Bind to an OS-assigned free port and release it immediately;
+        # Flask then binds the same number a moment later.
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            probe.bind(('127.0.0.1', 0))
+            port = probe.getsockname()[1]
+    else:
+        port = 5000
 
     if FROZEN:
-        import socket
         import threading
         import time
 

@@ -61,8 +61,11 @@ separate browser tab. It opens one app window (native, via WebView2)
 pointed at the local server it starts internally. Expect a several-second
 delay after launch (self-extracting the bundle) before the window appears.
 
-If port 5000 is already in use by something else, set `DEBRIEF_PORT` before
-launching to pick a different one (e.g. `set DEBRIEF_PORT=5050 && debrief.exe`).
+The packaged app automatically picks a free local port on its own each
+launch — it doesn't default to a fixed port, so it never conflicts with
+anything else already running on your machine. Set `DEBRIEF_PORT` before
+launching only if you need it to use a specific port for some reason
+(e.g. `set DEBRIEF_PORT=5050 && debrief.exe`).
 
 This release is Windows-only — there is no macOS/Linux build.
 

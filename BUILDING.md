@@ -62,5 +62,8 @@ that same loop — pywebview's WebView2 backend needs all three bundled
 explicitly; PyInstaller's automatic dependency analysis doesn't reliably
 catch them on its own.
 
-If port 5000 is already in use on your test machine, set `DEBRIEF_PORT`
-before launching to avoid a collision with something else.
+The packaged app auto-picks a free OS-assigned port each launch when
+`DEBRIEF_PORT` isn't set (it does NOT default to 5000) — this was a real
+observed failure: the app window loaded a completely different program's
+page because both happened to be on port 5000. Set `DEBRIEF_PORT`
+explicitly only to force a specific port.
